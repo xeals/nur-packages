@@ -40,7 +40,9 @@ rec {
 
   amdgpu-fan = pkgs.callPackage ./pkgs/tools/misc/amdgpu-fan { };
 
-  go-qt = pkgs.libsForQt512.callPackage ./pkgs/development/go-modules/qt { };
+  goModules = pkgs.recurseIntoAttrs rec {
+    qt = pkgs.libsForQt512.callPackage ./pkgs/development/go-modules/qt { };
+  };
 
   # A functional Jetbrains IDE-with-plugins package set.
   jetbrains =
@@ -106,11 +108,10 @@ rec {
   # The one in Nixpkgs still extracts the pre-built Debian package instead
   # of building from source.
   protonmailBridgePackages = pkgs.libsForQt512.callPackage ./pkgs/applications/networking/protonmail-bridge {
-    inherit go-qt;
+    inherit goModules;
   };
-  inherit (protonmailBridgePackages)
-    protonmail-bridge
-    protonmail-bridge-headless;
+  protonmail-bridge = protonmailBridgePackages.protonmail-bridge;
+  protonmail-bridge-headless = protonmailBridgePackages.protonmail-bridge-headless;
 
   radeon-profile-daemon = pkgs.libsForQt5.callPackage ./pkgs/tools/misc/radeon-profile-daemon { };
 
