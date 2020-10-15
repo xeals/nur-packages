@@ -15,11 +15,28 @@ rec {
   overlays = import ./overlays; # nixpkgs overlays
 
   # Alacritty with the unmerged ligature patches applied.
-  alacritty-ligatures = pkgs.callPackage ./pkgs/applications/misc/alacritty/ligatures.nix {
+  alacritty-ligatures = (pkgs.alacritty.override {
+    # Requires a minimum of 1.41, and this is the only version on both stable
+    # and unstable channels right now.
     inherit (pkgs.rustPackages_1_44) rustPlatform;
-    inherit (pkgs.xorg) libXcursor libXxf86vm libXi;
-    inherit (pkgs.darwin.appls_sdk.frameworks) AppKit CoreGraphics CoreServices CoreText Foundation OpenGL;
-  };
+  }).overrideAttrs (oldAttrs: rec {
+    pname = "${oldAttrs.pname}-ligatures";
+    version = "0.6.0.20201015";
+
+    src = pkgs.fetchFromGitHub {
+      owner = "zenixls2";
+      repo = "alacritty";
+      fetchSubmodules = true;
+      rev = "30ebb4303229acbfdbbf00a84a9c46973c4e0334";
+      sha256 = "1c0951zs1h2d6fjnxixfms3913m1c6yvgmcizgd9gfgx59ghpafi";
+    };
+
+    cargoDeps = oldAttrs.cargoDeps.overrideAttrs (pkgs.lib.const {
+      name = "${pname}-${version}-vendor";
+      inherit src;
+      outputHash = "1zvj8hdlc3fii1ffwkigvxjigwx53vls543pgcv3a2bw4sn1ky1k";
+    });
+  });
 
   amdgpu-fan = pkgs.callPackage ./pkgs/tools/misc/amdgpu-fan { };
 
