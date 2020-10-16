@@ -1,37 +1,46 @@
-# nur-packages-template
-
-**A template for [NUR](https://github.com/nix-community/NUR) repositories**
-
-## Setup
-
-1. Click on [Use this template](https://github.com/nix-community/nur-packages-template/generate) to start a repo based on this template. (Do _not_ fork it.)
-2. Add your packages to the [pkgs](./pkgs) directory and to
-   [default.nix](./default.nix)
-   * Remember to mark the broken packages as `broken = true;` in the `meta`
-     attribute, or travis (and consequently caching) will fail!
-   * Library functions, modules and overlays go in the respective directories
-3. Choose your CI: Depending on your preference you can use github actions (recommended) or [Travis ci](https://travis-ci.com).
-   - Github actions: Change your NUR repo name and optionally add a cachix name in [.github/workflows/build.yml](./.github/workflows/build.yml) and change the cron timer
-     to a random value as described in the file
-   - Travis ci: Change your NUR repo name and optionally your cachix repo name in 
-   [.travis.yml](./.travis.yml). Than enable travis in your repo. You can add a cron job in the repository settings on travis to keep your cachix cache fresh
-5. Change your travis and cachix names on the README template section and delete
-   the rest
-6. [Add yourself to NUR](https://github.com/nix-community/NUR#how-to-add-your-own-repository)
-
-## README template
-
 # nur-packages
 
 **My personal [NUR](https://github.com/nix-community/NUR) repository**
 
-<!-- Remove this if you don't use github actions -->
-![Build and populate cache](https://github.com/nix-community/<YOUR-GITHUB-USER>/workflows/Build%20and%20populate%20cache/badge.svg)
+[![Build Status](https://travis-ci.com/xeals/nur-packages.svg?branch=master)](https://travis-ci.com/xeals/nur-packages)
+[![Cachix Cache](https://img.shields.io/badge/cachix-xeals-blue.svg)](https://xeals.cachix.org)
 
-<!--
-Uncomment this if you use travis:
+## Noteworthy packages
 
-[![Build Status](https://travis-ci.com/<YOUR_TRAVIS_USERNAME>/nur-packages.svg?branch=master)](https://travis-ci.com/<YOUR_TRAVIS_USERNAME>/nur-packages)
--->
-[![Cachix Cache](https://img.shields.io/badge/cachix-<YOUR_CACHIX_CACHE_NAME>-blue.svg)](https://<YOUR_CACHIX_CACHE_NAME>.cachix.org)
+### Jetbrains with plugins
 
+A fan of the Emacs/Vim/VSCode plugin builder? Now enjoy it with your favourite Jetbrains IDE!
+
+The system is mostly proof-of-concept and there are a couple of issues with it at the moment, but it works for what is available in the repo.
+
+#### Using
+
+```nix
+{ pkgs ? import <nixpkgs> {} }:
+let
+  xeals = import (builtins.fetchTarball "https://git.xeal.me/xeals/nur-packages/archive/master.tar.gz") {
+    inherit pkgs;
+  };
+in
+  # e.g., for IntelliJ IDEA
+  xeals.jetbrains.ideaCommunityWithPlugins (jpkgs: [
+    jpkgs.ideavim
+    jpgs.checkstyle-idea
+  ])
+```
+
+#### Issues
+
+- [ ] The plugin derivation overrides the base instead of extending it; this is really only an issue for the open-source IDEs, and only once they're actually built from source (instead of repackaging the JARs)
+- [ ] Plugins must be manually added to the repo; long-term, I'd really want some way to scrape them, or at least have a script to add and update
+
+### spotify-ripper
+
+`spotify-ripper` is pretty flexible in the formats it supports, so the derivation allows you to customize which support packages to build with.
+
+The default package comes with nothing (which is not entirely useful -- this will probably change at some point). See [the builder](./pkgs/tools/misc/spotify-ripper/default.nix) for options.
+
+## General issues
+
+- [ ] `spotify-ripper` does not build on stable NixOS channels before 20.09 when built with m4a or mp4 support, as `fdk-aac-encoder` is not available
+- [ ] Due to weirdness in fixed output hashes, anything using `buildGoModule` and `buildRustPackage` will fail on unstable channels of Nixpkgs, and must be overridden if you want to use these packages on unstable channels
