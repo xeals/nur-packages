@@ -24,7 +24,7 @@ in
   # e.g., for IntelliJ IDEA
   xeals.jetbrains.ideaCommunityWithPlugins (jpkgs: [
     jpkgs.ideavim
-    jpgs.checkstyle-idea
+    jpkgs.checkstyle-idea
   ])
 ```
 
@@ -42,4 +42,4 @@ The default package comes with nothing (which is not entirely useful -- this wil
 ## General issues
 
 - [ ] `spotify-ripper` does not build on stable NixOS channels before 20.09 when built with m4a or mp4 support, as `fdk-aac-encoder` is not available
-- [ ] Due to weirdness in fixed output hashes, anything using `buildGoModule` and `buildRustPackage` will fail on unstable channels of Nixpkgs, and must be overridden if you want to use these packages on unstable channels
+- [ ] Due to changes in toolchains affected fixed output hashes, anything using `buildGoModule` and `buildRustPackage` will fail on NixOS 20.03. Override the hashes of `vendor` and `cargoDeps` attributes as needed
