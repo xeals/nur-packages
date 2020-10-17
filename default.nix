@@ -32,9 +32,9 @@ rec {
     };
 
     cargoDeps = oldAttrs.cargoDeps.overrideAttrs (pkgs.lib.const {
-      name = "${pname}-${version}-vendor";
+      name = "${pname}-${version}-vendor.tar.gz";
       inherit src;
-      outputHash = "1zvj8hdlc3fii1ffwkigvxjigwx53vls543pgcv3a2bw4sn1ky1k";
+      outputHash = "1gi3bvcra56maxcz1a6i1nmzdrfa4mhx6pn1xjbrifv7c6jlxard";
     });
 
     ligatureInputs = [
