@@ -12,8 +12,8 @@ env:
 
 jobs:
   include:
-    - env: NIX_PATH=nixpkgs=channel:nixpkgs-unstable
-    - env: NIX_PATH=nixpkgs=channel:nixos-unstable
+    # - env: NIX_PATH=nixpkgs=channel:nixpkgs-unstable
+    # - env: NIX_PATH=nixpkgs=channel:nixos-unstable
     - env: NIX_PATH=nixpkgs=channel:nixos-20.03
 
 script:
