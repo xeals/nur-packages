@@ -57,6 +57,7 @@ python2Packages.buildPythonApplication rec {
       to WAV, FLAC, Ogg Vorbis, Opus, AAC, and MP4/M4A.
     '';
     homepage = "https://github.com/hbashton/spotify-ripper";
-    license = stdenv.lib.licenses.mit;
+    # spotify-ripper itself is MIT, but the upstream libspotify is unfree.
+    license = stdenv.lib.licenses.unfree;
   };
 }
