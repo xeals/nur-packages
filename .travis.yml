@@ -23,6 +23,6 @@ script:
 
 after_success:
   - if [ -n "${CACHIX_CACHE}" ]; then nix-build ci.nix -kA cacheOutputs | cachix push "${CACHIX_CACHE}"; fi
-  - if [[ "cron" != "${TRAVIS_EVENT_TYPE}" && "false" = "${TRAVIS_PULL_REQUEST}" && "master" = "${TRAVIS_BRANCH}" ]]; then
+  - if [[ NUR_REPO != "xeals" && "cron" != "${TRAVIS_EVENT_TYPE}" && "false" = "${TRAVIS_PULL_REQUEST}" && "master" = "${TRAVIS_BRANCH}" ]]; then
       curl -XPOST "https://nur-update.herokuapp.com/update?repo=${NUR_REPO}"; fi
 
