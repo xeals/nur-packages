@@ -3,7 +3,6 @@
 , python3Packages
 
 , mopidy
-, py-sonic
 }:
 
 python3Packages.buildPythonApplication rec {
@@ -17,7 +16,7 @@ python3Packages.buildPythonApplication rec {
     sha256 = "0c5ghhhrj5v3yp4zmll9ari6r5c6ha8c1izwqshvadn40b02q7xz";
   };
 
-  propagatedBuildInputs = [ mopidy py-sonic ];
+  propagatedBuildInputs = [ mopidy python3Packages.py-sonic ];
 
   doCheck = false;
 

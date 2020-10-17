@@ -80,7 +80,7 @@ rec {
   libhl = pkgs.callPackage ./pkgs/development/libraries/libhl { };
 
   mopidy-subidy = pkgs.callPackage ./pkgs/applications/audio/mopidy/subidy.nix {
-    inherit (python3Packages) py-sonic;
+    python3Packages = pkgs.python3Packages // python3Packages;
   };
 
   pam_gnupg = pkgs.callPackage ./pkgs/os-specific/linux/pam_gnupg { };
