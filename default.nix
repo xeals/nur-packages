@@ -16,8 +16,8 @@ rec {
 
   # Alacritty with the unmerged ligature patches applied.
   alacritty-ligatures = (pkgs.alacritty.override {
-    # Requires a minimum of 1.41, and this is the only version on both stable
-    # and unstable channels right now.
+    # 0.6.0 requires a minimum of 1.43, and this is the only version on both
+    # stable and unstable channels right now.
     inherit (pkgs.rustPackages_1_44) rustPlatform;
   }).overrideAttrs (oldAttrs: rec {
     pname = "${oldAttrs.pname}-ligatures";
@@ -36,6 +36,24 @@ rec {
       inherit src;
       outputHash = "1zvj8hdlc3fii1ffwkigvxjigwx53vls543pgcv3a2bw4sn1ky1k";
     });
+
+    ligatureInputs = [
+      pkgs.fontconfig
+      pkgs.freetype
+      pkgs.libglvnd
+      pkgs.stdenv.cc.cc.lib
+      pkgs.xlibs.libxcb
+    ];
+
+    buildInputs = (oldAttrs.buildInputs or []) ++ ligatureInputs;
+
+    # HACK: One of the ligature libraries required the C++ stdlib at runtime,
+    # and I can't work out a better way to push it to the RPATH.
+    postInstall = pkgs.lib.optional (!pkgs.stdenv.isDarwin) ''
+      patchelf \
+        --set-rpath ${pkgs.lib.makeLibraryPath ligatureInputs}:"$(patchelf --show-rpath $out/bin/alacritty)" \
+        $out/bin/alacritty
+    '';
   });
 
   amdgpu-fan = pkgs.callPackage ./pkgs/tools/misc/amdgpu-fan { };
