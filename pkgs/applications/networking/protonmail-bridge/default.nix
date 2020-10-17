@@ -33,6 +33,9 @@ let
 
       nativeBuildInputs = (args.nativeBuildInputs or [ ]) ++ [
         pkg-config
+      ];
+
+      buildInputs = (args.buildInputs or [ ]) ++ [
         libsecret
       ];
 
@@ -57,7 +60,6 @@ let
         plaforms = platforms.x86_64;
       };
     });
-
 
 in
 
