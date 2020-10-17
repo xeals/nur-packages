@@ -18,7 +18,7 @@ buildGoModule rec {
     sha256 = "1qwyi3rr6x49w2cbxhsyg3sbyxib7l08g6j6z1mb5w22bdgmcy7c";
   };
 
-  vendorSha256 = "0g1qn73amcrk669614wrqbgzjqg0jhp61rwy3a2pl3z74j3536b9";
+  vendorSha256 = "00wghn93xz240ddj47b8mkbx3cg7c0486igp6vv0x9r6ylhywsm6";
   subPackages = [ "cmd/..." ];
 
   nativeBuildInputs = [ makeWrapper ];
@@ -31,8 +31,8 @@ buildGoModule rec {
       github.com/therecipe/env_linux_amd64_513 v0.0.0-20190626000307-e137a3934da6
       github.com/therecipe/env_windows_amd64_513 v0.0.0-20190626000028-79ec8bd06fb2
       github.com/therecipe/env_windows_amd64_513/Tools v0.0.0-20190626000028-79ec8bd06fb2
-      github.com/therecipe/qt/internal/binding/files/docs/5.12.0 v0.0.0-20200701200531-7f61353ee73e
-      github.com/therecipe/qt/internal/binding/files/docs/5.13.0 v0.0.0-20200701200531-7f61353ee73e
+      github.com/therecipe/qt/internal/binding/files/docs/5.12.0 v0.0.0-20200904063919-c0c124a5770d
+      github.com/therecipe/qt/internal/binding/files/docs/5.13.0 v0.0.0-20200904063919-c0c124a5770d
     )
     EOM
   '';
