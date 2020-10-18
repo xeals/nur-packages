@@ -21,7 +21,8 @@ in
 assert assertMsg (length badPlugins == 0) errorMsg;
 
 appendToName "with-plugins" (package.overrideAttrs (oldAttrs: {
-  inherit plugins;
+  passthru = { inherit plugins; };
+  # TODO: Purely aesthetics, but link the plugin to its name instead of hash-name-version
   installPhase = oldAttrs.installPhase + ''
     for plugin in $plugins; do
       ln -s "$plugin" "$out/$name/plugins/$(basename $plugin)"

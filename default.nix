@@ -63,7 +63,7 @@ rec {
   };
 
   # A functional Jetbrains IDE-with-plugins package set.
-  jetbrains = (pkgs.dontRecurseIntoAttrs rec {
+  jetbrains = pkgs.dontRecurseIntoAttrs rec {
     jetbrainsPluginsFor = variant: import ./pkgs/top-level/jetbrains-plugins.nix {
       inherit (pkgs) lib newScope stdenv fetchzip;
       inherit variant;
@@ -80,7 +80,7 @@ rec {
     clionWithPlugins = clionPlugins.jetbrainsWithPlugins;
     ideaCommunityWithPlugins = ideaCommunityPlugins.jetbrainsWithPlugins;
     ideaUltimateWithPlugins = ideaUltimatePlugins.jetbrainsWithPlugins;
-  });
+  };
 
   libhl = pkgs.callPackage ./pkgs/development/libraries/libhl { };
 
