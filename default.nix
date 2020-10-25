@@ -16,9 +16,7 @@ rec {
 
   # Alacritty with the unmerged ligature patches applied.
   alacritty-ligatures = (pkgs.alacritty.override {
-    # 0.6.0 requires a minimum of 1.43, and this is the only version on both
-    # stable and unstable channels right now.
-    inherit (pkgs.rustPackages_1_44) rustPlatform;
+    inherit (pkgs.rustPackages_1_45) rustPlatform;
   }).overrideAttrs (oldAttrs: rec {
     pname = "${oldAttrs.pname}-ligatures";
     version = "0.6.0.20201015";
