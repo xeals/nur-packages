@@ -55,5 +55,6 @@ stdenv.mkDerivation rec {
     description = "Steam Achievement Manager For Linux";
     homepage = "https://github.com/PaulCombal/SamRewritten";
     license = licenses.gpl3;
+    platforms = platforms.linux;
   };
 }
