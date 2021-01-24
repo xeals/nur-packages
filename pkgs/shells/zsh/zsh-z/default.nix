@@ -7,7 +7,7 @@
 
 stdenv.mkDerivation {
   pname = "zsh-z";
-  version = "2020.09.19.09209db";
+  version = "20200919.g09209db";
 
   src = fetchFromGitHub {
     owner = "agkozak";

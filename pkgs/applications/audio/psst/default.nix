@@ -21,7 +21,7 @@ assert withGui -> gtk3.meta.available;
 
 rustPlatform.buildRustPackage rec {
   pname = "psst";
-  version = "20210114.1fadc78";
+  version = "20210114.g1fadc78";
   src = fetchFromGitHub {
     owner = "jpochyla";
     repo = "psst";
