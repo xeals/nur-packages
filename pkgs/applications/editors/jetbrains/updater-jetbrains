@@ -27,6 +27,10 @@ PRODUCT_CODE = {
 }
 
 
+PACKAGE_RE = re.compile("[^0-9A-Za-z._-]")
+HTML_RE = re.compile("<[^>]+/?>")
+
+
 def to_slug(name):
     slug = name.replace(" ", "-").lstrip(".")
     for char in ",/;'\\<>:\"|!@#$%^&*()":
@@ -59,18 +63,15 @@ class Build:
         return self.code + "-" + self.version
 
 
-PACKAGE_RE = re.compile("[^0-9A-Za-z._-]")
-HTML_RE = re.compile("<[^>]+/?>")
-
-
 class Plugin:
-    def __init__(self, data, category=None):
+    def __init__(self, data, build, category=None):
+        self.build = build
         self.category = category
         self.name = data.find("name").text
-        self.id = data.find("id").text
+        self.xml_id = data.find("id").text
         self._description = data.find("description").text
         self.url = data.get("url") or data.find("vendor").get("url")
-        self.version = data.find("version").text
+        self.version = data.find("version").text.replace(" ", "-")
         self.slug = to_slug(self.name)
         self.orig_slug = self.slug
 
@@ -84,7 +85,7 @@ class Plugin:
     def description(self):
         return re.sub(HTML_RE, "", self._description or "").strip()
 
-    def download_url(self, build, deref=True):
+    def get_download_url(self, deref=True):
         """
         Provides the ZIP download URL for this plugin.
 
@@ -94,17 +95,51 @@ class Plugin:
         (which it is by default). However, this comes at the cost of requiring
         an HTTP request.
         """
-        id = urllib.parse.quote(self.id)
-        url = f"https://plugins.jetbrains.com/pluginManager?action=download&id={id}&build={build}"
+        id = urllib.parse.quote(self.xml_id)
+        url = f"https://plugins.jetbrains.com/pluginManager?action=download&id={id}&build={self.build}"
         if deref:
             res = requests.get(url, allow_redirects=not deref)
             url = "https://plugins.jetbrains.com" + re.sub(
                 "\?.*$", "", res.headers["location"]
             )
+            self.jetbrains_url = url
             if url.endswith("external"):
                 res = requests.get(url, allow_redirects=not deref)
                 url = res.headers["location"]
         return url
+
+    def fetch_external(self, update_only=False):
+        """
+        Performs network calls to update this plugin with information that
+        cannot be performed from the public XML API.
+
+        Additional attributes provided after this method:
+
+          download_url : the plugin download location
+          sha          : the SHA256 of the download source
+
+        If update_only is true, a full update is performed, also providing:
+
+          id          : the plugin integer ID
+          license_url : the plugin license URL
+          license     : the Nixpkgs license attribute
+        """
+        self.download_url = self.get_download_url(deref=True)
+        self.sha = prefetch(self, self.build, self.download_url)
+
+        if update_only:
+            return
+
+        self.id = self.jetbrains_url.split("/")[4]
+        res = requests.get(
+            f"https://plugins.jetbrains.com/api/plugins/{self.id}"
+        ).json()
+        try:
+            self.url = self.url or res["urls"]["sourceCodeUrl"]
+        except KeyError:
+            pass
+        self.license_url = res["urls"]["licenseUrl"]
+        self.license = translate_license(self.license_url, fallback=self.url)
 
     def packagename(self):
         slug = re.sub(PACKAGE_RE, "", self.slug.lower()).replace(".", "-")
@@ -128,16 +163,16 @@ def list_plugins(build):
     https://plugins.jetbrains.com/docs/marketplace/plugins-list.html
     """
     resp = requests.get(f"https://plugins.jetbrains.com/plugins/list/?build={build}")
-    return parse_repository(resp.content)
+    return parse_repository(resp.content, build)
 
 
-def parse_repository(content):
+def parse_repository(content, build):
     tree = etree.XML(content)
     plugins = []
     for cat in tree.findall("category"):
         cat_name = cat.get("name")
         for plugin in cat.findall("idea-plugin"):
-            plugins.append(Plugin(plugin, cat_name))
+            plugins.append(Plugin(plugin, build, cat_name))
     return plugins
 
 
@@ -155,7 +190,7 @@ def deduplicate(plugins):
 
 def prefetch(plugin, build, url=None):
     if not url:
-        url = plugin.download_url(build)
+        url = plugin.download_url or plugin.get_download_url()
     res = sp.run(
         ["nix-prefetch-url", "--name", plugin.filename(), url], capture_output=True,
     )
@@ -164,19 +199,90 @@ def prefetch(plugin, build, url=None):
     return res.stdout.decode("utf-8").strip()
 
 
-def write_packages(outfile, plugins, build):
-    builder = build.builder()
+def custom_license(short, full, url, free=False):
+    return f"""{{
+        shortName = "{short}";
+        fullName = "{full}";
+        url = "{url}";
+        free = {"true" if free else "false"};
+      }}"""
+
+
+def arr(url):
+    return custom_license("allrightsreserved", "All Rights Reserved", url)
+
+
+def translate_license(url, fallback=""):
+    license = url.lower()
+    if license == "":
+        print(f"no license for {fallback}", file=sys.stderr)
+        return arr(fallback)
+    # Common (license) hosts
+    elif "github.com" in license or "raw.githubusercontent.com" in license:
+        try:
+            owner, repo = url.split("/")[3:5]
+        except ValueError:
+            print(f"no license metadata for {url}", file=sys.stderr)
+            return arr(url)
+        res = requests.get(
+            f"https://api.github.com/repos/{owner}/{repo}",
+            headers={"Accept": "application/vnd.github.v3+json"},
+        ).json()
+        try:
+            return translate_license(res["license"]["key"])
+        except (KeyError, TypeError):
+            print(f"no license metadata for {url}", file=sys.stderr)
+            return arr(url)
+    elif "opensource.org" in license:
+        os_license = license.rstrip("/").split("/")[-1]
+        if os_license == "alphabetical":
+            # Doesn't actually have a license, it's the listing page
+            return arr(fallback)
+        return translate_license(os_license)
+    # Actual translations now
+    elif "apache.org/licenses/license-2.0" in license or "apache-2.0" in license:
+        return "lib.licenses.asl20"
+    elif "artistic-2" in license:
+        return "lib.licenses.artistic2"
+    elif "bsd-2-clause" in license:
+        return "lib.licenses.bsd2"
+    elif "bsd-3-clause" in license:
+        return "lib.licenses.bsd3"
+    elif "eclipse.org/legal/epl-2.0" in license:
+        return "lib.licenses.epl20"
+    elif "gpl-3.0" in license:
+        return "lib.licenses.gpl3Only"
+    elif "mit" in license:
+        return "lib.licenses.mit"
+    elif "osd" in license:
+        return "lib.licenses.free"
+    elif "other" == license:
+        return arr(fallback)
+    # Custom known licenses
+    elif "plugins.jetbrains.com/legal/terms-of-use" in license:
+        return custom_license(
+            "jetbrains", "Jetbrains Plugin Marketplace Agreement", license
+        )
+    # Fallback
+    else:
+        print(f"unrecognised license {license}", file=sys.stderr)
+        return arr(license)
+
+
+def write_packages(outfile, plugins):
+    builder = plugins[0].build.builder() or ""
     outfile.write("{callPackage}:\n{")
 
-    for plugin in plugins:
-        src_url = plugin.download_url(build, deref=True)
-        src_ext = os.path.splitext(src_url)[-1]
-
+    for i, plugin in enumerate(plugins):
+        print(f"{i:04} {plugin.packagename()}")
         try:
-            sha = prefetch(plugin, build, src_url)
+            plugin.fetch_external()
         except IOError as e:
             print(e, file=sys.stderr)
             continue
+        src_url = plugin.download_url
+        src_ext = os.path.splitext(src_url)[-1]
+        sha = plugin.sha
 
         build_inputs = []
         if src_ext == ".zip":
@@ -186,7 +292,7 @@ def write_packages(outfile, plugins, build):
         # internal and external plugins; need to find some way to resolve them
         requires = []
         # TODO: Licenses are actually on the website, but aren't provided in the API
-        license = "lib.licenses.free"
+        license = plugin.license
 
         call_args = [str(builder), "fetchurl", "lib"]
         for binput in build_inputs:
@@ -197,7 +303,7 @@ def write_packages(outfile, plugins, build):
   {plugin.packagename()} = callPackage ({{ {", ".join(sorted(call_args))} }}: {builder} {{
     pname = "{plugin.slug}";
     plugname = "{plugin.name}";
-    plugid = "{plugin.id}";
+    plugid = "{plugin.xml_id}";
     version = "{plugin.version}";
     src = fetchurl {{
       url = "{src_url}";
@@ -227,6 +333,7 @@ def main():
     parser.add_argument(
         "-o", "--out", type=str, help="File to write plugins to",
     )
+    parser.add_argument("-O", "--offset", type=int, help="Offset number of packages")
     parser.add_argument(
         "package",
         metavar="PACKAGE",
@@ -241,15 +348,17 @@ def main():
     plugins.sort(key=lambda p: p.slug)
     deduplicate(plugins)
 
+    if args.offset:
+        plugins = plugins[args.offset :]
     if args.number:
         plugins = plugins[: args.number]
 
     print(f"Generating packages for {len(plugins)} plugins", file=sys.stderr)
     if not args.out:
-        write_packages(sys.stdout, plugins, build)
+        write_packages(sys.stdout, plugins)
     else:
         with open(args.out, "w") as f:
-            write_packages(f, plugins, build)
+            write_packages(f, plugins)
 
 
 main()

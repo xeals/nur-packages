@@ -1,5 +1,4 @@
-{ lib
-}: self:
+{ lib, makeWrapper, runCommand }: self:
 
 with lib;
 
@@ -20,12 +19,31 @@ in
 
 assert assertMsg (length badPlugins == 0) errorMsg;
 
-appendToName "with-plugins" (package.overrideAttrs (oldAttrs: {
-  passthru = { inherit plugins; };
-  # TODO: Purely aesthetics, but link the plugin to its name instead of hash-name-version
-  installPhase = oldAttrs.installPhase + ''
-    for plugin in $plugins; do
-      ln -s "$plugin" "$out/$name/plugins/$(basename $plugin)"
-    done
-  '';
-}))
+runCommand
+  (appendToName "with-plugins" package).name
+{
+  nativeBuildInputs = [ package makeWrapper ];
+  inherit package plugins;
+  packageName = package.name;
+
+  preferLocalBuild = true;
+  allowSubstitutes = false;
+
+} ''
+  mkdir -p $out/$packageName/plugins
+  for dir in $package/*; do
+    cp -r $dir $out/
+  done
+
+  # Install plugins
+  for plugin in $plugins; do
+    local pluginName=$(basename $plugin)
+    pluginName=''${pluginName#*-}
+    pluginName=''${pluginName%-[0-9.]*}
+    ln -s $plugin $out/$packageName/plugins/$pluginName
+  done
+
+  # Fix up wrapper
+  substituteInPlace $out/bin/* \
+    --replace "$package" "$out"
+''

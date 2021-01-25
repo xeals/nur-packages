@@ -4,23 +4,30 @@
 , jetbrainsPlatforms
 }:
 
-{ pluginId
+{ plugid
 , pname
 , version
-, versionId
-, sha256
-, filename ? "${pname}-${version}.zip"
-}:
+, ...
+}@args:
 
-stdenv.mkDerivation {
-  inherit pname version;
+let
 
-  src = fetchzip {
-    inherit sha256;
-    url = "https://plugins.jetbrains.com/files/${toString pluginId}/${toString versionId}/${filename}";
+  defaultMeta = {
+    broken = false;
+  } // lib.optionalAttrs ((args.src.meta.homepage or "") != "") {
+    homepage = args.src.meta.homepage;
+  } // lib.optionalAttrs ((args.src.meta.description or "") != "") {
+    description = args.src.meta.description;
+  } // lib.optionalAttrs ((args.src.meta.license or {}) != {}) {
+    license = args.src.meta.license;
   };
 
+in
+
+stdenv.mkDerivation (args // {
   passthru = { inherit jetbrainsPlatforms; };
+
+  dontUnpack = lib.any (lib.hasSuffix ".jar") args.src.urls;
 
   installPhase = ''
     mkdir $out
@@ -28,6 +35,7 @@ stdenv.mkDerivation {
   '';
 
   meta = {
-    homepage = "https://plugins.jetbrains.com/plugin/${pluginId}-${lib.toLower pname}";
+    inherit (args.meta) license description;
+    homepage = if (args.meta.homepage == "") then null else args.meta.homepage;
   };
-}
+})

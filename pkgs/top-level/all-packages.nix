@@ -55,7 +55,7 @@ rec {
   # A functional Jetbrains IDE-with-plugins package set.
   jetbrains = pkgs.dontRecurseIntoAttrs rec {
     jetbrainsPluginsFor = variant: import ../top-level/jetbrains-plugins.nix {
-      inherit (pkgs) lib newScope stdenv fetchzip;
+      inherit (pkgs) lib newScope stdenv fetchzip makeWrapper runCommand;
       inherit variant;
     };
 

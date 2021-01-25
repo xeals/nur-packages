@@ -2,6 +2,8 @@
 , newScope
 , stdenv
 , fetchzip
+, makeWrapper
+, runCommand
 
 , variant
 }:
@@ -17,7 +19,7 @@ let
   };
 
   jetbrainsWithPlugins = import ../applications/editors/jetbrains/wrapper.nix {
-    inherit lib;
+    inherit lib makeWrapper runCommand;
   };
 
 in lib.makeScope newScope (self: lib.makeOverridable ({
