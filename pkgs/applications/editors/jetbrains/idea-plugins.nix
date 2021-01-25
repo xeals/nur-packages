@@ -10,7 +10,7 @@ let
   };
 
   generateIdea = lib.makeOverridable ({
-    idea ? ./manual-idea-packages.nix
+    idea ? ./idea-generated.nix
   }: let
 
     imported = import idea {
