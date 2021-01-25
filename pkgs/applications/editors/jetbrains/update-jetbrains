@@ -1,0 +1,12 @@
+#!/usr/bin/env nix-shell
+#!nix-shell --show-trace ./updater.nix -i bash
+
+set -e
+
+for app in $APPS; do
+  ./updater-jetbrains $app -o ${app%-[0-9.]*}-generated.nix
+done
+
+# Local Variables:
+# mode: sh
+# End:
