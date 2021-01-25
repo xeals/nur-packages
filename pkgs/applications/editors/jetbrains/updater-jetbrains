@@ -7,6 +7,7 @@ import re
 import requests
 import subprocess as sp
 import sys
+import unicodedata
 import urllib
 
 from lxml import etree
@@ -35,6 +36,7 @@ def to_slug(name):
     slug = name.replace(" ", "-").lstrip(".")
     for char in ",/;'\\<>:\"|!@#$%^&*()":
         slug = slug.replace(char, "")
+    slug = unicodedata.normalize("NFD", slug).encode("ascii", "ignore").decode("utf-8")
     return slug
 
 
@@ -195,8 +197,10 @@ def prefetch(plugin, build, url=None):
         ["nix-prefetch-url", "--name", plugin.filename(), url], capture_output=True,
     )
     if not res.stdout:
-        raise IOError(f"nix-prefetch-url {plugin} failed: {res.stderr.decode('utf-8')}")
-    return res.stdout.decode("utf-8").strip()
+        raise IOError(
+            f"nix-prefetch-url {plugin} failed: {res.stderr.decode('unicode-escape')}"
+        )
+    return res.stdout.decode("unicode-escape").strip()
 
 
 def custom_license(short, full, url, free=False):
