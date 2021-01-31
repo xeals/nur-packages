@@ -1,4 +1,5 @@
 { stdenv
+, lib
 , fetchFromGitHub
 , buildGoModule
 
@@ -18,7 +19,7 @@ let
     , ...
     }@args:
 
-    buildGoModule (stdenv.lib.recursiveUpdate args rec {
+    buildGoModule (lib.recursiveUpdate args rec {
       inherit pname;
       version = "1.5.6";
 
@@ -53,7 +54,7 @@ let
           ''
         ];
 
-      meta = with stdenv.lib; {
+      meta = with lib; {
         description = "Integrate ProtonMail paid account with any program that supports IMAP and SMTP";
         homepage = "https://protonmail.com";
         license = licenses.gpl3;
