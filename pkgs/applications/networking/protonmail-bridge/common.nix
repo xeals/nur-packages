@@ -31,19 +31,13 @@ buildGoModule (lib.recursiveUpdate args rec {
     libsecret
   ];
 
-  buildFlagsArray =
-    let
-      t = "github.com/ProtonMail/proton-bridge/pkg/constants";
-    in
-    [
-      "-tags=${tags}"
-      ''
-        -ldflags=
-          -X ${t}.Version=${version}
-          -X ${t}.Revision=unknown
-          -X ${t}.BuildDate=unknown
-      ''
-    ];
+  inherit tags;
+
+  ldflags = [
+    "-X github.com/ProtonMail/proton-bridge/pkg/constants.Version=${version}"
+    "-X github.com/ProtonMail/proton-bridge/pkg/constants.Revision=${version}"
+    "-X github.com/ProtonMail/proton-bridge/pkg/constants.BuildDate=unknown"
+  ];
 
   meta = with lib; {
     description = "Integrate ProtonMail paid account with any program that supports IMAP and SMTP";
