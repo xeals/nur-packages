@@ -12,7 +12,7 @@
 
 buildGoModule (lib.recursiveUpdate args rec {
   inherit pname;
-  version = "1.5.6";
+  version = "1.8.10";
 
   src = fetchFromGitHub {
     owner = "ProtonMail";
