@@ -17,17 +17,14 @@ in
       type = types.nullOr types.attrs;
       default = null;
       description = ''
-        Configuration set alternative to
-        <literalExpression>configFile</literalExpression>.
+        Configuration set alternative to <literal>configFile</literal>.
       '';
-      example = ''
-        {
-          global = {
-            monitor = 0;
-            follow = "none";
-          };
+      example = {
+        global = {
+          monitor = 0;
+          follow = "none";
         };
-      '';
+      };
     };
 
     configFile = mkOption {
