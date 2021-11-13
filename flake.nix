@@ -23,6 +23,10 @@
 
       nixosModules = lib.mapAttrs (_: path: import path) (import ./modules);
 
+      nixosModule = {
+        imports = lib.attrValues self.nixosModules;
+      };
+
       overlays = import ./overlays // {
         pkgs = final: prev: import ./pkgs/top-level/all-packages.nix { pkgs = prev; };
       };
