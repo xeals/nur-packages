@@ -20,6 +20,10 @@
               (_: drv: builtins.elem system (drv.meta.platforms or [ ]))
               (import ./pkgs/top-level/all-packages.nix { inherit pkgs; });
 
+          devShells.ci = pkgs.mkShell {
+            buildInputs = [ pkgs.nix-build-uncached ];
+          };
+
           apps = {
             alacritty = mkApp { drv = pkgs.alacritty-ligatures; exePath = "/bin/alacritty"; };
             protonmail-bridge = mkApp { drv = pkgs.protonmail-bridge; };
