@@ -1,9 +1,9 @@
-name: "Build and populate cache"
+name: "CI"
 on:
   pull_request:
   push:
 jobs:
-  tests:
+  build-and-update:
     strategy:
       matrix:
         # Set this to notify the global nur package registry that changes are
@@ -41,4 +41,4 @@ jobs:
       run: nix develop .#ci -c nix-build-uncached ci.nix -A cacheOutputs
     - name: Trigger NUR update
       if: ${{ matrix.nurRepo != '<YOUR_REPO_NAME>' }}
-      run: curl -XPOST "https://nur-update.herokuapp.com/update?repo=${{ matrix.nurRepo }}"
+      run: curl -XPOST "https://nur-update.nix-community.org/update?repo=${{ matrix.nurRepo }}"
