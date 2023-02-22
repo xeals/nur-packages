@@ -2,11 +2,6 @@ name: "Build and populate cache"
 on:
   pull_request:
   push:
-  schedule:
-    # rebuild everyday at 6:50
-    # TIP: Choose a random time here so not all repositories are build at once:
-    # https://www.random.org/clock-times/?num=1&earliest=01%3A00&latest=08%3A00&interval=5&format=html&rnd=new
-    - cron:  '50 6 * * *'
 jobs:
   tests:
     strategy:
