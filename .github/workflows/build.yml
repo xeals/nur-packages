@@ -13,13 +13,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: action/checkout@v3
+        uses: actions/checkout@v3
       - uses: cachix/install-nix-action@v19
       - name: Check ${{ matrix.check }}
         # Depends on nixos/nix#7759 to simply `nix flake check`
-        run:
-          - export SYSTEM=$(nix eval --raw --impure --expr "builtins.currentSystem")
-          - nix run .#checks.$SYSTEM.${{ matrix.check }}
+        run: nix run .#checks.$(nix eval --raw --impure --expr "builtins.currentSystem").${{ matrix.check }}
 
   build-and-update:
     strategy:
