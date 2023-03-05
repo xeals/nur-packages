@@ -20,7 +20,6 @@
           # Unstable names are variables.
           packages =
             let
-
               legacyPackages = import ./pkgs/top-level/all-packages.nix { inherit pkgs; };
               onlyAvailable = lib.filterAttrs (_: drv: builtins.elem system (drv.meta.platforms or [ ]));
             in

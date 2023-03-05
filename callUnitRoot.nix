@@ -1,4 +1,9 @@
-{ pkgs, lib ? pkgs.lib, unitDir ? "unit", packageFun ? "package.nix", root ? "${./pkgs}/${unitDir}" }:
+{ pkgs
+, lib ? pkgs.lib
+, unitDir ? "unit"
+, packageFun ? "package.nix"
+, root ? "${./pkgs}/${unitDir}"
+}:
 let
   shards = lib.attrNames (builtins.readDir root);
   namesForShard = shard: lib.mapAttrs'
