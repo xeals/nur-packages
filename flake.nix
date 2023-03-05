@@ -20,23 +20,11 @@
           # Unstable names are variables.
           packages =
             let
-              unitDir = "unit";
-              packageFun = "package.nix";
 
-              callUnitRoot = root:
-                let
-                  shards = lib.attrNames (builtins.readDir root);
-                  namesForShard = shard: lib.mapAttrs'
-                    (name: _: { inherit name; value = "${root}/${shard}/${name}"; })
-                    (builtins.readDir "${root}/${shard}");
-                  namesToPath = lib.foldl' lib.recursiveUpdate { } (map namesForShard shards);
-                  units = lib.mapAttrs (_: path: pkgs.callPackage "${path}/${packageFun}" { }) namesToPath;
-                in
-                units;
               legacyPackages = import ./pkgs/top-level/all-packages.nix { inherit pkgs; };
               onlyAvailable = lib.filterAttrs (_: drv: builtins.elem system (drv.meta.platforms or [ ]));
             in
-            onlyAvailable (legacyPackages // callUnitRoot "${./pkgs}/${unitDir}");
+            onlyAvailable (legacyPackages // import ./callUnitRoot.nix { inherit pkgs; });
 
           checks = {
             nixpkgs-fmt = pkgs.writeShellScriptBin "nixpkgs-fmt-check" ''
