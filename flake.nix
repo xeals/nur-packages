@@ -21,9 +21,10 @@
           packages =
             let
               legacyPackages = import ./pkgs/top-level/all-packages.nix { inherit pkgs; };
+              unitPackages = import ./callUnitRoot.nix { inherit pkgs; };
               onlyAvailable = lib.filterAttrs (_: drv: builtins.elem system (drv.meta.platforms or [ ]));
             in
-            onlyAvailable (legacyPackages // import ./callUnitRoot.nix { inherit pkgs; });
+            onlyAvailable (legacyPackages // unitPackages);
 
           checks = {
             nixpkgs-fmt = pkgs.writeShellScriptBin "nixpkgs-fmt-check" ''
