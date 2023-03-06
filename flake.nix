@@ -33,6 +33,18 @@
             deadnix = pkgs.writeShellScriptBin "deadnix-check" ''
               ${pkgs.deadnix}/bin/deadnix --fail .
             '';
+            # Ensures that the NUR bot can evaluate and find all our packages.
+            # Normally we'd also run with `--option restrict-eval true`, but
+            # this is incompatible with flakes because reasons.
+            nur = pkgs.writeShellScriptBin "nur-check" ''
+              nix-env -f . -qa \* --meta \
+                --allowed-uris https://static.rust-lang.org \
+                --option allow-import-from-derivation true \
+                --drv-path --show-trace \
+                -I nixpkgs=$(nix-instantiate --find-file nixpkgs) \
+                -I ./ \
+                --json | ${pkgs.jq}/bin/jq -r 'values | .[].name'
+            '';
           };
 
           devShells.ci = pkgs.mkShellNoCC {

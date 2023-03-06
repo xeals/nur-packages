@@ -10,6 +10,7 @@ jobs:
         check:
           - nixpkgs-fmt
           - deadnix
+          - nur
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
