@@ -1,7 +1,10 @@
-{ stdenv
+{ lib
+, stdenv
 , fetchurl
 , writeScriptBin
 , appimageTools
+, copyDesktopItems
+, makeDesktopItem
 }:
 
 let
@@ -33,7 +36,59 @@ let
     exec "${cura5}/bin/${name}" "''${args[@]}"
   '';
 in
-script // {
-  inherit name pname version;
-  meta.platforms = [ "x86_64-linux" ];
+stdenv.mkDerivation rec {
+  inherit pname version;
+  dontUnpack = true;
+
+  nativeBuildInputs = [ copyDesktopItems ];
+  desktopItems = [
+    # Based on upstream.
+    # https://github.com/Ultimaker/Cura/blob/main/packaging/AppImage/cura.desktop.jinja
+    (makeDesktopItem {
+      name = "cura";
+      desktopName = "UltiMaker Cura";
+      genericName = "3D Printing Software";
+      comment = meta.longDescription;
+      exec = "cura5";
+      icon = "cura-icon";
+      terminal = false;
+      type = "Application";
+      mimeTypes = [
+        "model/stl"
+        "application/vnd.ms-3mfdocument"
+        "application/prs.wavefront-obj"
+        "image/bmp"
+        "image/gif"
+        "image/jpeg"
+        "image/png"
+        "text/x-gcode"
+        "application/x-amf"
+        "application/x-ply"
+        "application/x-ctm"
+        "model/vnd.collada+xml"
+        "model/gltf-binary"
+        "model/gltf+json"
+        "model/vnd.collada+xml+zip"
+      ];
+      categories = [ "Graphics" ];
+      keywords = [ "3D" "Printing" ];
+    })
+  ];
+
+  # TODO: Extract cura-icon from AppImage source.
+  installPhase = ''
+    mkdir -p $out/bin
+    cp ${script}/bin/cura5 $out/bin/cura5
+    runHook postInstall
+  '';
+
+  meta = {
+    description = "3D printing software";
+    homepage = "https://github.com/ultimaker/cura";
+    longDescription = ''
+      Cura converts 3D models into paths for a 3D printer. It prepares your print for maximum accuracy, minimum printing time and good reliability with many extra features that make your print come out great.
+    '';
+    license = lib.licenses.lgpl3;
+    platforms = [ "x86_64-linux" ];
+  };
 }
