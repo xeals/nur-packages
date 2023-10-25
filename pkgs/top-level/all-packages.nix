@@ -29,16 +29,6 @@ rec {
     python3Packages = pkgs.python3Packages // python3Packages;
   };
 
-  picom-animations = pkgs.picom.overrideAttrs (_oldAttrs: {
-    pname = "picom-animations";
-    src = pkgs.fetchFromGitHub {
-      owner = "jonaburg";
-      repo = "picom";
-      rev = "d718c94";
-      sha256 = "165mc53ryyxn2ybkhikmk51ay3k18mvlsym3am3mgr8cpivmf2rm";
-    };
-  });
-
   python3Packages = pkgs.recurseIntoAttrs {
     py-sonic = pkgs.python3.pkgs.callPackage ../development/python-modules/py-sonic { };
   };
