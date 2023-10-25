@@ -1,10 +1,6 @@
 { pkgs }:
 
 rec {
-  goModules = pkgs.recurseIntoAttrs rec {
-    qt = pkgs.libsForQt5.callPackage ../development/go-modules/qt { };
-  };
-
   # A functional Jetbrains IDE-with-plugins package set.
   jetbrains = pkgs.dontRecurseIntoAttrs rec {
     jetbrainsPluginsFor = variant: import ../top-level/jetbrains-plugins.nix {
@@ -32,14 +28,6 @@ rec {
   python3Packages = pkgs.recurseIntoAttrs {
     py-sonic = pkgs.python3.pkgs.callPackage ../development/python-modules/py-sonic { };
   };
-
-  # The one in Nixpkgs still extracts the pre-built Debian package instead
-  # of building from source.
-  protonmailBridgePackages = pkgs.libsForQt5.callPackage ../applications/networking/protonmail-bridge {
-    inherit goModules;
-  };
-  protonmail-bridge = protonmailBridgePackages.protonmail-bridge;
-  protonmail-bridge-headless = protonmailBridgePackages.protonmail-bridge-headless;
 
   radeon-profile-daemon = pkgs.libsForQt5.callPackage ../tools/misc/radeon-profile-daemon { };
 }
