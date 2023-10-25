@@ -39,12 +39,6 @@ rec {
     };
   });
 
-  polybar = pkgs.polybar.overrideAttrs (oldAttrs: {
-    # Enables an extra button in formatting, indirectly allowing the use of
-    # the mouse forward and backward buttons.
-    patches = (oldAttrs.patches or [ ]) ++ [ ../applications/misc/polybar/9button.patch ];
-  });
-
   python3Packages = pkgs.recurseIntoAttrs {
     py-sonic = pkgs.python3.pkgs.callPackage ../development/python-modules/py-sonic { };
   };
