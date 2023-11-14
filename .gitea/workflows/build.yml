@@ -15,7 +15,10 @@ jobs:
     steps:
       - name: Checkout repository
         uses: https://gitea.com/actions/checkout@v3
-      - uses: https://github.com/cachix/install-nix-action@v23
+      - name: Install nix
+        uses: https://github.com/cachix/install-nix-action@v23
+        with:
+          github_access_token: ${{ secrets.INPUT_GITHUB_ACCESS_TOKEN }}
       - name: Check ${{ matrix.check }}
         # Depends on nixos/nix#7759 to simply `nix flake check`
         run: nix run .#checks.$(nix eval --raw --impure --expr "builtins.currentSystem").${{ matrix.check }}
