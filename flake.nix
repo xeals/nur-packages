@@ -5,9 +5,6 @@
   inputs.flake-utils.url = "github:numtide/flake-utils";
 
   outputs = { self, nixpkgs, flake-utils }:
-    let
-      inherit (nixpkgs) lib;
-    in
     flake-utils.lib.eachDefaultSystem
       (system:
         let
@@ -46,9 +43,9 @@
           };
         })
     // {
-      nixosModules = lib.mapAttrs (_: path: import path) (import ./modules) // {
+      nixosModules = nixpkgs.lib.mapAttrs (_: path: import path) (import ./modules) // {
         default = {
-          imports = lib.attrValues self.nixosModules;
+          imports = nixpkgs.lib.attrValues self.nixosModules;
         };
       };
 
