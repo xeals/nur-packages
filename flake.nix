@@ -7,7 +7,6 @@
   outputs = { self, nixpkgs, flake-utils }:
     let
       inherit (nixpkgs) lib;
-      inherit (flake-utils.lib) mkApp;
     in
     flake-utils.lib.eachDefaultSystem
       (system:
@@ -17,14 +16,12 @@
         {
           packages = import ./pkgs/top-level { localSystem = system; inherit pkgs; };
 
+          formatter = pkgs.writeShellScriptBin "nur-packages-fmt" ''
+            ${pkgs.nixpkgs-fmt}/bin/nixpkgs-fmt .
+            ${pkgs.deadnix}/bin/deadnix -e .
+          '';
+
           checks = {
-            # FIXME: Disabled until I can work out what to do with generated code.
-            # nixpkgs-fmt = pkgs.writeShellScriptBin "nixpkgs-fmt-check" ''
-            #   ${pkgs.nixpkgs-fmt}/bin/nixpkgs-fmt --check .
-            # '';
-            # deadnix = pkgs.writeShellScriptBin "deadnix-check" ''
-            #   ${pkgs.deadnix}/bin/deadnix --fail .
-            # '';
             # Ensures that the NUR bot can evaluate and find all our packages.
             # Normally we'd also run with `--option restrict-eval true`, but
             # this is incompatible with flakes because reasons.
@@ -46,14 +43,6 @@
 
           devShells.ci = pkgs.mkShellNoCC {
             buildInputs = [ pkgs.nix-build-uncached ];
-          };
-
-          apps = {
-            alacritty = mkApp { drv = pkgs.alacritty-ligatures; exePath = "/bin/alacritty"; };
-            psst-cli = mkApp { drv = pkgs.psst; exePath = "/bin/psst-cli"; };
-            psst-gui = mkApp { drv = pkgs.psst; exePath = "/bin/psst-gui"; };
-            samrewritten = mkApp { drv = pkgs.samrewritten; };
-            spotify-ripper = mkApp { drv = pkgs.spotify-ripper; };
           };
         })
     // {
