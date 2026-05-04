@@ -10,7 +10,7 @@ jobs:
       - name: Checkout repository
         uses: https://gitea.com/actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
       - name: Install nix
-        uses: https://github.com/cachix/install-nix-action@v31
+        uses: https://github.com/cachix/install-nix-action@8aa03977d8d733052d78f4e008a241fd1dbf36b3 # v31
       - name: Run check
         run: nix flake check
 
@@ -39,11 +39,11 @@ jobs:
     - name: Checkout repository
       uses: https://gitea.com/actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
     - name: Install nix
-      uses: https://github.com/cachix/install-nix-action@v31
+      uses: https://github.com/cachix/install-nix-action@8aa03977d8d733052d78f4e008a241fd1dbf36b3 # v31
     - name: Show nixpkgs version
       run: nix eval --impure --expr '(import ./flake-compat.nix { src = ./.; }).lib.version'
     - name: Setup cachix
-      uses: https://github.com/cachix/cachix-action@v17
+      uses: https://github.com/cachix/cachix-action@1eb2ef646ac0255473d23a5907ad7b04ce94065c # v17
       if: ${{ matrix.cachixName != '<YOUR_CACHIX_NAME>' }}
       with:
         name: ${{ matrix.cachixName }}
